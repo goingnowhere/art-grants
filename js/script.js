@@ -226,12 +226,6 @@ function createProposalCard(row, headers) {
                             <p>${formatText(technicalDetails)}</p>
                         </div>
                     ` : ''}
-                    ${budget ? `
-                        <div class="detail-section">
-                            <h3>Budget</h3>
-                            <p>${formatText(budget)}</p>
-                        </div>
-                    ` : ''}
                     ${spaceRequirements ? `
                         <div class="detail-section">
                             <h3>Space Requirements</h3>
