@@ -1,11 +1,10 @@
 :root {
-    --bg: #f5f5f5;
-    --card-bg: #fff;
-    --text: #333;
-    --muted: #666;
-    --border: #e0e0e0;
-    --accent: #0066cc;
-    --accent-hover: #0052a3;
+    --bg: #ffffff;
+    --card-bg: #ffffff;
+    --text: #000000;
+    --muted: #000000;
+    --border: #000000;
+    --accent: #000000;
 }
 
 * {
@@ -15,12 +14,12 @@
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--bg);
     color: var(--text);
     font-size: 14px;
-    line-height: 1.6;
-    letter-spacing: 0.01em;
+    line-height: 1.5;
+    letter-spacing: 0.02em;
     padding: 1.5rem;
 }
 
@@ -31,16 +30,16 @@ body {
 
 h1 {
     text-align: center;
-    margin-bottom: 2rem;
-    font-size: 2rem;
-    font-weight: 600;
-    letter-spacing: 0.15em;
+    margin-bottom: 2.5rem;
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
 }
 
 .layout {
     display: grid;
-    grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+    grid-template-columns: minmax(180px, 200px) minmax(0, 1fr);
     gap: 2rem;
     align-items: start;
 }
@@ -58,15 +57,14 @@ h1 {
 .loading {
     text-align: center;
     padding: 3rem;
-    color: #666;
+    color: var(--text);
 }
 
 .spinner {
-    border: 3px solid #e0e0e0;
-    border-top: 3px solid #333;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
+    border: 1px solid var(--border);
+    border-top: 1px solid transparent;
+    width: 24px;
+    height: 24px;
     animation: spin 0.8s linear infinite;
     margin: 1rem auto;
 }
@@ -77,11 +75,10 @@ h1 {
 }
 
 .error {
-    background: #fee;
-    color: #c33;
+    background: #ffffff;
+    color: var(--text);
     padding: 1rem;
-    border-radius: 4px;
-    border-left: 3px solid #c33;
+    border: 1px solid var(--border);
     margin: 1rem auto;
     max-width: 800px;
 }
@@ -89,49 +86,62 @@ h1 {
 .controls {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1.5rem;
     padding: 1.25rem;
     border: 1px solid var(--border);
-    border-radius: 6px;
     background: var(--card-bg);
 }
 
 .status-filters {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.5rem;
 }
 
 .status-chip {
-    border: none;
+    border: 1px solid var(--border);
     background: transparent;
     text-align: left;
     cursor: pointer;
-    transition: opacity 0.15s ease, transform 0.15s ease;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: background 0.1s ease, color 0.1s ease;
+}
+
+.status-chip.is-active {
+    background: var(--text);
+    color: var(--bg);
 }
 
 .status-chip:not(.is-active) {
-    opacity: 0.35;
+    opacity: 0.4;
 }
 
 .status-chip:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 4px;
+    outline: 2px solid var(--text);
+    outline-offset: 2px;
 }
 
 .sort-control {
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
-    font-size: 0.95rem;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-weight: 600;
 }
 
 .sort-control select {
-    padding: 0.45rem 0.75rem;
-    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
     border: 1px solid var(--border);
-    font-size: 0.95rem;
-    background: #fff;
+    font-size: 0.9rem;
+    background: var(--bg);
+    font-family: inherit;
+    letter-spacing: 0.02em;
 }
 
 .view-toggle {
@@ -143,24 +153,24 @@ h1 {
     flex: 1;
     border: 1px solid var(--border);
     background: transparent;
-    padding: 0.4rem 0.65rem;
-    font-size: 0.8rem;
-    letter-spacing: 0.08em;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     cursor: pointer;
-    border-radius: 999px;
-    transition: background 0.15s ease, color 0.15s ease;
+    font-weight: 600;
+    transition: background 0.1s ease, color 0.1s ease;
 }
 
 .view-button.is-active {
-    background: #111;
-    color: #fff;
+    background: var(--text);
+    color: var(--bg);
 }
 
 #proposals-list {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1.25rem;
+    gap: 1.5rem;
     width: 100%;
 }
 
@@ -172,121 +182,135 @@ h1 {
 .proposal-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 1.25rem;
+    padding: 1.5rem;
     display: flex;
     flex-direction: column;
-    transition: box-shadow 0.2s ease;
+    transition: border-color 0.1s ease;
 }
 
 .proposal-card:hover {
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    border-color: var(--text);
+}
+
+.proposal-card.card-clickable {
+    cursor: pointer;
+}
+
+.proposal-card.card-clickable:hover {
+    border-color: var(--text);
 }
 
 .proposal-card header {
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
 }
 
 .title-row {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 0.75rem;
+    gap: 1rem;
 }
 
 .proposal-card h2 {
-    font-size: 1.3rem;
-    margin-bottom: 0.15rem;
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
     color: var(--text);
     flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 600;
+    letter-spacing: 0.02em;
 }
 
 .status {
     display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 999px;
-    font-size: 0.85rem;
-    font-weight: 500;
+    padding: 0.3rem 0.75rem;
+    border: 1px solid var(--border);
+    font-size: 0.75rem;
+    font-weight: 600;
     white-space: nowrap;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
 }
 
 .status.funded {
-    background: #d4edda;
-    color: #155724;
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
 }
 
 .status.not-funded {
-    background: #f8d7da;
-    color: #721c24;
+    background: transparent;
+    color: var(--text);
+    border-color: var(--text);
 }
 
 .status.under-review {
-    background: #fff3cd;
-    color: #856404;
+    background: transparent;
+    color: var(--text);
+    border-color: var(--text);
+    border-style: dashed;
 }
 
 .proposal-card .author {
-    color: var(--muted);
-    font-size: 0.9rem;
+    color: var(--text);
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+    opacity: 0.7;
 }
 
 .cover-image {
     width: 100%;
-    height: 190px;
-    object-fit: cover;
-    border-radius: 4px;
-    margin-bottom: 1rem;
-    background: #f0f0f0;
+    height: auto;
+    display: block;
+    margin-bottom: 1.25rem;
+    border: 1px solid var(--border);
 }
 
 .proposal-card main {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.25rem;
     flex: 1;
 }
 
 .summary {
-    color: var(--muted);
+    color: var(--text);
     display: -webkit-box;
     -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
-}
-
-summary {
-    cursor: pointer;
-    color: var(--accent);
-    font-weight: 500;
-    user-select: none;
-}
-
-summary:hover {
-    color: var(--accent-hover);
+    line-height: 1.6;
+    letter-spacing: 0.01em;
 }
 
 .details-content {
-    margin-top: 0.75rem;
+    margin-top: 1rem;
     border-top: 1px solid var(--border);
-    padding-top: 0.75rem;
-    line-height: 1.5;
+    padding-top: 1rem;
+    line-height: 1.6;
 }
 
 .detail-section + .detail-section {
-    margin-top: 0.85rem;
+    margin-top: 1.25rem;
 }
 
 .detail-section h3 {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 0.3rem;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.5rem;
     color: var(--text);
+    font-weight: 700;
 }
 
 .detail-section p {
-    color: var(--muted);
-    font-size: 0.95rem;
+    color: var(--text);
+    font-size: 0.9rem;
+    letter-spacing: 0.01em;
+    line-height: 1.6;
 }
 
 .table-view {
@@ -296,50 +320,129 @@ summary:hover {
 .proposal-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    border: 1px solid var(--border);
 }
 
 .proposal-table th {
     text-align: left;
-    font-size: 0.78rem;
-    letter-spacing: 0.12em;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--muted);
-    border-bottom: 2px solid var(--border);
-    padding: 0.6rem 0.4rem;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 0.5rem;
+    font-weight: 700;
+    background: var(--bg);
 }
 
 .proposal-table td {
     border-bottom: 1px solid var(--border);
-    padding: 0.65rem 0.4rem;
+    padding: 0.75rem 0.5rem;
 }
 
-.proposal-table tbody tr:hover td {
-    background: rgba(0, 0, 0, 0.02);
+.proposal-table td:first-child {
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 600;
 }
 
-.table-details summary {
-    color: var(--accent);
+.proposal-table tbody tr.table-row-clickable {
     cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.75rem;
 }
 
-.table-details summary:hover {
-    color: var(--accent-hover);
+.proposal-table tbody tr.table-row-clickable:hover {
+    background: var(--text);
+    color: var(--bg);
 }
 
-.table-details div {
-    margin-top: 0.5rem;
-    line-height: 1.5;
+.proposal-table tbody tr.table-row-clickable:hover td {
+    background: var(--text);
+    color: var(--bg);
 }
 
 .empty {
     text-align: center;
     padding: 3rem;
-    color: #999;
+    color: var(--text);
     grid-column: 1 / -1;
+    opacity: 0.5;
+}
+
+.proposal-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.modal-content {
+    position: relative;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    box-shadow: none;
+    z-index: 1001;
+}
+
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    font-size: 1.5rem;
+    line-height: 1;
+    color: var(--text);
+    cursor: pointer;
+    z-index: 1002;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.1s ease, color 0.1s ease;
+    font-weight: 600;
+}
+
+.modal-close:hover {
+    background: var(--text);
+    color: var(--bg);
+}
+
+.modal-content > .proposal-card {
+    border: none;
+    margin: 0;
+}
+
+.modal-content > .proposal-card header {
+    padding-right: 3.5rem;
+}
+
+.modal-content > .proposal-card .cover-image {
+    height: auto;
+    max-height: 60vh;
+    object-fit: contain;
+    border: 1px solid var(--border);
 }
 
 @media (max-width: 768px) {
@@ -348,7 +451,7 @@ summary:hover {
     }
 
     h1 {
-        font-size: 1.6rem;
+        font-size: 1.5rem;
     }
 
     .layout {
@@ -365,5 +468,13 @@ summary:hover {
 
     .view-toggle {
         width: 100%;
+    }
+
+    .proposal-modal {
+        padding: 1rem;
+    }
+
+    .modal-content {
+        max-height: 95vh;
     }
 }

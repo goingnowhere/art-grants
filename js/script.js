@@ -244,11 +244,17 @@ function buildDetailSections(proposal) {
         .join('');
 }
 
-function createProposalCard(proposal) {
+function createProposalCard(proposal, showAllDetails = false) {
     const card = document.createElement('div');
     card.className = 'proposal-card';
 
     const detailSections = buildDetailSections(proposal);
+
+    const detailsHTML = showAllDetails && detailSections ? `
+        <div class="details-content">
+            ${detailSections}
+        </div>
+    ` : '';
 
     card.innerHTML = `
         <header>
@@ -261,14 +267,7 @@ function createProposalCard(proposal) {
         <main>
             ${proposal.coverImage ? `<img class="cover-image" src="${proposal.coverImage.replace(/"/g, '&quot;')}" alt="${escapeHtml(proposal.title)}" loading="lazy" onerror="this.style.display='none'">` : ''}
             <div class="summary">${formatText(proposal.description || 'No description provided.')}</div>
-            ${detailSections ? `
-                <details>
-                    <summary>View full details</summary>
-                    <div class="details-content">
-                        ${detailSections}
-                    </div>
-                </details>
-            ` : ''}
+            ${detailsHTML}
         </main>
     `;
 
@@ -282,9 +281,7 @@ function buildTable(list) {
     thead.innerHTML = `
         <tr>
             <th>Title</th>
-            <th>Artist</th>
             <th>Status</th>
-            <th>Details</th>
         </tr>
     `;
 
@@ -292,44 +289,64 @@ function buildTable(list) {
 
     list.forEach(proposal => {
         const tr = document.createElement('tr');
+        tr.classList.add('table-row-clickable');
+        tr.dataset.proposalIndex = list.indexOf(proposal);
 
         const titleTd = document.createElement('td');
         titleTd.textContent = proposal.title;
 
-        const artistTd = document.createElement('td');
-        artistTd.textContent = proposal.name || '—';
-
         const statusTd = document.createElement('td');
         statusTd.innerHTML = `<span class="status ${proposal.statusClass}">${escapeHtml(proposal.statusLabel)}</span>`;
 
-        const detailsTd = document.createElement('td');
-        const detailSections = buildDetailSections(proposal);
-        const descriptionHTML = proposal.description ? `<p>${formatText(proposal.description)}</p>` : '';
-
-        if (detailSections || proposal.description) {
-            detailsTd.innerHTML = `
-                <details class="table-details">
-                    <summary>Open</summary>
-                    <div>
-                        ${descriptionHTML}
-                        ${detailSections}
-                    </div>
-                </details>
-            `;
-        } else {
-            detailsTd.textContent = '—';
-        }
-
         tr.appendChild(titleTd);
-        tr.appendChild(artistTd);
         tr.appendChild(statusTd);
-        tr.appendChild(detailsTd);
         tbody.appendChild(tr);
+
+        tr.addEventListener('click', () => openProposalModal(proposal));
     });
 
     table.appendChild(thead);
     table.appendChild(tbody);
     return table;
+}
+
+function openProposalModal(proposal) {
+    const modal = document.createElement('div');
+    modal.className = 'proposal-modal';
+    
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop';
+    
+    const content = document.createElement('div');
+    content.className = 'modal-content';
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'modal-close';
+    closeBtn.setAttribute('aria-label', 'Close');
+    closeBtn.textContent = '×';
+    
+    const card = createProposalCard(proposal, true);
+    
+    content.appendChild(closeBtn);
+    content.appendChild(card);
+    modal.appendChild(backdrop);
+    modal.appendChild(content);
+    
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+
+    const closeModal = () => {
+        document.body.removeChild(modal);
+        document.body.style.overflow = '';
+    };
+
+    backdrop.addEventListener('click', closeModal);
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+    });
+    
+    closeBtn.focus();
 }
 
 function sortProposals(list) {
@@ -372,7 +389,18 @@ function renderProposals() {
         proposalsContainer.appendChild(buildTable(list));
         proposalsContainer.classList.remove('single');
     } else {
-        list.forEach(proposal => proposalsContainer.appendChild(createProposalCard(proposal)));
+        list.forEach(proposal => {
+            const card = createProposalCard(proposal);
+            card.classList.add('card-clickable');
+            card.addEventListener('click', (e) => {
+                // Don't open modal if clicking on interactive elements
+                if (e.target.closest('details, summary, a, button')) {
+                    return;
+                }
+                openProposalModal(proposal);
+            });
+            proposalsContainer.appendChild(card);
+        });
         proposalsContainer.classList.toggle('single', list.length === 1);
     }
 
