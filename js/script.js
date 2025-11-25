@@ -187,6 +187,15 @@ function getStatusLabel(status) {
     return 'Under Review';
 }
 
+function generateSlug(title) {
+    return title
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_-]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}
+
 function mapRowToProposal(row, headers) {
     const get = (names) => findColumn(row, headers, names);
     let imageUrl = get(['Image', 'image']) || '';
@@ -197,10 +206,12 @@ function mapRowToProposal(row, headers) {
 
     const statusRaw = get(['Status', 'status']);
     const statusClass = getStatusClass(statusRaw);
+    const title = get(['Title', 'title']) || 'Untitled Proposal';
 
     return {
-        title: get(['Title', 'title']) || 'Untitled Proposal',
-        titleLower: (get(['Title', 'title']) || 'Untitled Proposal').toLowerCase(),
+        title,
+        titleLower: title.toLowerCase(),
+        slug: generateSlug(title),
         name: get(['Name', 'name']),
         description: get(['Description', 'description']),
         technicalDetails: get(['Technical details', 'Technical Details']),
@@ -244,7 +255,7 @@ function buildDetailSections(proposal) {
         .join('');
 }
 
-function createProposalCard(proposal, showAllDetails = false) {
+function createProposalCard(proposal, showAllDetails = false, showStatusText = false) {
     const card = document.createElement('div');
     card.className = 'proposal-card';
 
@@ -256,11 +267,18 @@ function createProposalCard(proposal, showAllDetails = false) {
         </div>
     ` : '';
 
+    card.dataset.status = proposal.statusClass;
+    card.dataset.slug = proposal.slug;
+    const statusHTML = showStatusText ? `<span class="status ${proposal.statusClass}">${escapeHtml(proposal.statusLabel)}</span>` : '';
+    const permalink = `${window.location.origin}${window.location.pathname}#${proposal.slug}`;
+    const permalinkHTML = !showStatusText ? `<button class="permalink-btn" data-permalink="${permalink}" aria-label="Copy permalink" title="Copy permalink">🔗</button>` : '';
+    const cardStatusHTML = !showStatusText ? `<div class="card-status"><span class="status ${proposal.statusClass}">${escapeHtml(proposal.statusLabel)}</span>${permalinkHTML}</div>` : '';
+    
     card.innerHTML = `
         <header>
             <div class="title-row">
                 <h2>${escapeHtml(proposal.title)}</h2>
-                <span class="status ${proposal.statusClass}">${escapeHtml(proposal.statusLabel)}</span>
+                ${statusHTML}
             </div>
             ${proposal.name ? `<div class="author">${escapeHtml(proposal.name)}</div>` : ''}
         </header>
@@ -269,7 +287,23 @@ function createProposalCard(proposal, showAllDetails = false) {
             <div class="summary">${formatText(proposal.description || 'No description provided.')}</div>
             ${detailsHTML}
         </main>
+        ${cardStatusHTML}
     `;
+
+    const permalinkBtn = card.querySelector('.permalink-btn');
+    if (permalinkBtn) {
+        permalinkBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const url = permalinkBtn.dataset.permalink;
+            navigator.clipboard.writeText(url).then(() => {
+                const originalText = permalinkBtn.textContent;
+                permalinkBtn.textContent = '✓';
+                setTimeout(() => {
+                    permalinkBtn.textContent = originalText;
+                }, 1000);
+            });
+        });
+    }
 
     return card;
 }
@@ -325,7 +359,7 @@ function openProposalModal(proposal) {
     closeBtn.setAttribute('aria-label', 'Close');
     closeBtn.textContent = '×';
     
-    const card = createProposalCard(proposal, true);
+    const card = createProposalCard(proposal, true, true);
     
     content.appendChild(closeBtn);
     content.appendChild(card);
@@ -334,10 +368,16 @@ function openProposalModal(proposal) {
     
     document.body.appendChild(modal);
     document.body.style.overflow = 'hidden';
+    
+    window.location.hash = proposal.slug;
+    window.scrollTo(0, 0);
 
     const closeModal = () => {
         document.body.removeChild(modal);
         document.body.style.overflow = '';
+        if (window.location.hash === `#${proposal.slug}`) {
+            window.history.replaceState(null, '', window.location.pathname);
+        }
     };
 
     backdrop.addEventListener('click', closeModal);
@@ -347,6 +387,20 @@ function openProposalModal(proposal) {
     });
     
     closeBtn.focus();
+}
+
+function openProposalBySlug(slug) {
+    const proposal = proposalData.find(p => p.slug === slug);
+    if (proposal) {
+        openProposalModal(proposal);
+    }
+}
+
+function handleHashChange() {
+    const hash = window.location.hash.slice(1);
+    if (hash) {
+        openProposalBySlug(hash);
+    }
 }
 
 function sortProposals(list) {
@@ -449,6 +503,13 @@ function hydrateProposals(data) {
 
     proposalData = completeRows.map(row => mapRowToProposal(row, headers));
     applyFiltersAndRender();
+    
+    // Check hash after data is loaded
+    if (window.location.hash) {
+        handleHashChange();
+    }
 }
+
+window.addEventListener('hashchange', handleHashChange);
 
 fetchData();

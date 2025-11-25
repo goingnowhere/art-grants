@@ -23,6 +23,15 @@ body {
     padding: 1.5rem;
 }
 
+html, body {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
 .page-wrap {
     width: 100%;
     margin: 0 auto;
@@ -33,7 +42,7 @@ h1 {
     margin-bottom: 2.5rem;
     font-size: 1.75rem;
     font-weight: 700;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
 }
 
@@ -93,28 +102,19 @@ h1 {
 .intro p {
     font-size: 0.85rem;
     line-height: 1.6;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.02em;
     color: var(--text);
-    margin-bottom: 1rem;
 }
 
-.form-link {
-    display: inline-block;
-    padding: 0.5rem 0.75rem;
-    border: 1px solid var(--border);
-    background: transparent;
+.inline-link {
     color: var(--text);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+}
+
+.inline-link:hover {
     text-decoration: none;
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    font-weight: 600;
-    transition: background 0.1s ease, color 0.1s ease;
-}
-
-.form-link:hover {
-    background: var(--text);
-    color: var(--bg);
 }
 
 .controls {
@@ -140,7 +140,7 @@ h1 {
     padding: 0.4rem 0.75rem;
     font-size: 0.85rem;
     font-weight: 500;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
     transition: background 0.1s ease, color 0.1s ease;
 }
@@ -164,7 +164,7 @@ h1 {
     flex-direction: column;
     gap: 0.4rem;
     font-size: 0.85rem;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
     font-weight: 600;
 }
@@ -189,7 +189,7 @@ h1 {
     background: transparent;
     padding: 0.5rem 0.75rem;
     font-size: 0.75rem;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
     cursor: pointer;
     font-weight: 600;
@@ -216,10 +216,24 @@ h1 {
 .proposal-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
-    padding: 1.5rem;
+    padding: 1.25rem;
     display: flex;
     flex-direction: column;
     transition: border-color 0.1s ease;
+}
+
+.proposal-card[data-status="funded"] {
+    border-left: 6px solid var(--text);
+}
+
+.proposal-card[data-status="not-funded"] {
+    border-left: 6px solid var(--text);
+    border-left-style: dashed;
+}
+
+.proposal-card[data-status="under-review"] {
+    border-left: 6px solid var(--text);
+    border-left-style: dotted;
 }
 
 .proposal-card:hover {
@@ -235,7 +249,7 @@ h1 {
 }
 
 .proposal-card header {
-    margin-bottom: 1.25rem;
+    margin-bottom: 0.75rem;
 }
 
 .title-row {
@@ -243,6 +257,29 @@ h1 {
     align-items: flex-start;
     justify-content: space-between;
     gap: 1rem;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.permalink-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.85rem;
+    line-height: 1;
+    transition: background 0.1s ease, color 0.1s ease;
+    flex-shrink: 0;
+}
+
+.permalink-btn:hover {
+    background: var(--text);
+    color: var(--bg);
 }
 
 .proposal-card h2 {
@@ -300,14 +337,14 @@ h1 {
     height: 200px;
     object-fit: cover;
     display: block;
-    margin-bottom: 1.25rem;
+    margin-bottom: 0.75rem;
     border: 1px solid var(--border);
 }
 
 .proposal-card main {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 0.75rem;
     flex: 1;
 }
 
@@ -318,7 +355,16 @@ h1 {
     -webkit-box-orient: vertical;
     overflow: hidden;
     line-height: 1.6;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.02em;
+    text-overflow: ellipsis;
+}
+
+.card-status {
+    margin-top: auto;
+    padding-top: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .details-content {
@@ -344,7 +390,7 @@ h1 {
 .detail-section p {
     color: var(--text);
     font-size: 0.9rem;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.02em;
     line-height: 1.6;
 }
 
@@ -396,6 +442,12 @@ h1 {
 .proposal-table tbody tr.table-row-clickable:hover td {
     background: var(--text);
     color: var(--bg);
+}
+
+.proposal-table tbody tr.table-row-clickable:hover .status {
+    background: var(--bg);
+    color: var(--text);
+    border-color: var(--bg);
 }
 
 .empty {
