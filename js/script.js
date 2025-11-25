@@ -1,6 +1,49 @@
 const SPREADSHEET_ID = '2PACX-1vSGOuiHGuAinQZKdFPFfNE3w_h8Q-_LkpVz_fdEC31CNk0mentc8Ct-G2MjlrfilHaItfQ4xgwaEBil';
 const CSV_URL = `https://docs.google.com/spreadsheets/d/e/${SPREADSHEET_ID}/pub?output=csv`;
 
+const sortSelect = document.getElementById('sort-select');
+const statusChips = document.querySelectorAll('.status-chip');
+const viewButtons = document.querySelectorAll('.view-button');
+const proposalsContainer = document.getElementById('proposals-list');
+
+let sortMode = '';
+let viewMode = 'cards';
+let proposalData = [];
+let filteredList = [];
+
+const statusFilters = Array.from(statusChips).reduce((acc, chip) => {
+    const key = chip.dataset.status;
+    acc[key] = true;
+    chip.addEventListener('click', () => toggleStatusFilter(chip, key));
+    return acc;
+}, {});
+
+viewButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        const nextView = button.dataset.view;
+        if (nextView === viewMode) return;
+        viewMode = nextView;
+        viewButtons.forEach(btn => {
+            const isActive = btn.dataset.view === viewMode;
+            btn.classList.toggle('is-active', isActive);
+            btn.setAttribute('aria-pressed', String(isActive));
+        });
+        renderProposals();
+    });
+});
+
+sortSelect.addEventListener('change', event => {
+    sortMode = event.target.value;
+    applyFiltersAndRender();
+});
+
+function toggleStatusFilter(chip, key) {
+    statusFilters[key] = !statusFilters[key];
+    chip.classList.toggle('is-active', statusFilters[key]);
+    chip.setAttribute('aria-pressed', String(statusFilters[key]));
+    applyFiltersAndRender();
+}
+
 function parseCSV(text) {
     if (!text || !text.trim()) return { headers: [], rows: [] };
 
@@ -8,127 +51,103 @@ function parseCSV(text) {
     let currentRow = [];
     let currentField = '';
     let inQuotes = false;
-    let i = 0;
 
-    while (i < text.length) {
+    for (let i = 0; i < text.length; i++) {
         const char = text[i];
         const nextChar = text[i + 1];
 
         if (char === '"') {
             if (inQuotes && nextChar === '"') {
                 currentField += '"';
-                i += 2;
-                continue;
+                i++;
             } else {
                 inQuotes = !inQuotes;
-                i++;
-                continue;
             }
+            continue;
         }
 
         if (char === ',' && !inQuotes) {
             currentRow.push(currentField.trim());
             currentField = '';
-            i++;
             continue;
         }
 
         if ((char === '\n' || char === '\r') && !inQuotes) {
             if (char === '\r' && nextChar === '\n') {
-                i += 2;
-            } else {
                 i++;
             }
-            
-            if (currentField !== '' || currentRow.length > 0) {
-                currentRow.push(currentField.trim());
-                if (currentRow.some(field => field.trim())) {
-                    rows.push([...currentRow]);
-                }
-                currentRow = [];
-                currentField = '';
+            currentRow.push(currentField.trim());
+            if (currentRow.some(cell => cell.trim())) {
+                rows.push([...currentRow]);
             }
+            currentRow = [];
+            currentField = '';
             continue;
         }
 
         currentField += char;
-        i++;
     }
 
     if (currentField !== '' || currentRow.length > 0) {
         currentRow.push(currentField.trim());
-        if (currentRow.some(field => field.trim())) {
+        if (currentRow.some(cell => cell.trim())) {
             rows.push(currentRow);
         }
     }
 
-    if (rows.length === 0) return { headers: [], rows: [] };
+    if (!rows.length) return { headers: [], rows: [] };
 
     const headers = rows[0].map(h => h.trim());
-    const dataRows = rows.slice(1).map(row => {
-        const rowObj = {};
-        headers.forEach((header, index) => {
-            rowObj[header] = (row[index] || '').trim();
-        });
-        return rowObj;
-    }).filter(row => {
-        return Object.values(row).some(val => val && val.trim());
-    });
+    const dataRows = rows.slice(1)
+        .map(row => {
+            const obj = {};
+            headers.forEach((header, index) => {
+                obj[header] = (row[index] || '').trim();
+            });
+            return obj;
+        })
+        .filter(row => Object.values(row).some(val => val && val.trim()));
 
     return { headers, rows: dataRows };
 }
 
 function getFieldValue(row, headers, fieldName) {
-    const normalizedFieldName = fieldName.toLowerCase().trim();
-    
+    const normalized = fieldName.toLowerCase().trim();
+
     if (row[fieldName] !== undefined && row[fieldName] !== null) {
         return String(row[fieldName]).trim();
     }
-    
-    const header = headers.find(h => {
-        return h.toLowerCase().trim() === normalizedFieldName;
-    });
-    
-    if (header && row[header] !== undefined && row[header] !== null) {
-        return String(row[header]).trim();
+
+    const exactHeader = headers.find(h => h.toLowerCase().trim() === normalized);
+    if (exactHeader && row[exactHeader] !== undefined && row[exactHeader] !== null) {
+        return String(row[exactHeader]).trim();
     }
-    
-    const partialMatch = headers.find(h => {
+
+    const partialHeader = headers.find(h => {
         const normalizedHeader = h.toLowerCase().trim();
-        return normalizedHeader.includes(normalizedFieldName) || normalizedFieldName.includes(normalizedHeader);
+        return normalizedHeader.includes(normalized) || normalized.includes(normalizedHeader);
     });
-    
-    if (partialMatch && row[partialMatch] !== undefined && row[partialMatch] !== null) {
-        return String(row[partialMatch]).trim();
+
+    if (partialHeader && row[partialHeader] !== undefined && row[partialHeader] !== null) {
+        return String(row[partialHeader]).trim();
     }
-    
+
     return '';
 }
 
-function findColumn(row, headers, possibleNames) {
-    for (const name of possibleNames) {
+function findColumn(row, headers, candidates) {
+    for (const name of candidates) {
         const value = getFieldValue(row, headers, name);
         if (value) return value;
-    }
-    
-    for (const header of headers) {
-        const normalizedHeader = header.toLowerCase().trim();
-        for (const name of possibleNames) {
-            const normalizedName = name.toLowerCase().trim();
-            if (normalizedHeader === normalizedName || 
-                normalizedHeader.includes(normalizedName) ||
-                normalizedName.includes(normalizedHeader)) {
-                const value = String(row[header] || '').trim();
-                if (value) return value;
-            }
-        }
     }
     return '';
 }
 
 function formatText(text) {
     if (!text) return '';
-    return escapeHtml(text).replace(/\n/g, '<br>');
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML.replace(/\n/g, '<br>');
 }
 
 function escapeHtml(text) {
@@ -139,7 +158,7 @@ function escapeHtml(text) {
 }
 
 function getStatusClass(status) {
-    if (!status) return '';
+    if (!status) return 'under-review';
     const normalized = status.toLowerCase().trim();
     if (normalized.includes('funded') && !normalized.includes('not')) {
         return 'funded';
@@ -150,11 +169,11 @@ function getStatusClass(status) {
     if (normalized.includes('review') || normalized.includes('under')) {
         return 'under-review';
     }
-    return '';
+    return 'under-review';
 }
 
 function getStatusLabel(status) {
-    if (!status) return '';
+    if (!status) return 'Under Review';
     const normalized = status.toLowerCase().trim();
     if (normalized.includes('funded') && !normalized.includes('not')) {
         return 'Funded';
@@ -165,130 +184,228 @@ function getStatusLabel(status) {
     if (normalized.includes('review') || normalized.includes('under')) {
         return 'Under Review';
     }
-    return status;
+    return 'Under Review';
 }
 
-function createProposalCard(row, headers) {
+function mapRowToProposal(row, headers) {
+    const get = (names) => findColumn(row, headers, names);
+    let imageUrl = get(['Image', 'image']) || '';
+    imageUrl = imageUrl.trim();
+    if (imageUrl.startsWith('"') && imageUrl.endsWith('"')) {
+        imageUrl = imageUrl.slice(1, -1);
+    }
+
+    const statusRaw = get(['Status', 'status']);
+    const statusClass = getStatusClass(statusRaw);
+
+    return {
+        title: get(['Title', 'title']) || 'Untitled Proposal',
+        titleLower: (get(['Title', 'title']) || 'Untitled Proposal').toLowerCase(),
+        name: get(['Name', 'name']),
+        description: get(['Description', 'description']),
+        technicalDetails: get(['Technical details', 'Technical Details']),
+        spaceRequirements: get(['Space requirements', 'Space Requirements']),
+        locationRequirements: get(['Location requirements', 'Location Requirements']),
+        powerRequirements: get(['Power requirements', 'Power Requirements']),
+        sound: get(['Sound', 'sound']),
+        safety: get(['Safety', 'safety']),
+        strike: get(['Strike', 'strike']),
+        coCreation: get(['Co-creation', 'Co-creation']),
+        team: get(['Team', 'team']),
+        coverImage: imageUrl,
+        statusLabel: getStatusLabel(statusRaw),
+        statusClass,
+        statusKey: statusClass,
+        orderIndex: Math.random(),
+    };
+}
+
+function buildDetailSections(proposal) {
+    const sections = [
+        { label: 'Technical Details', value: proposal.technicalDetails },
+        { label: 'Space Requirements', value: proposal.spaceRequirements },
+        { label: 'Location Requirements', value: proposal.locationRequirements },
+        { label: 'Power Requirements', value: proposal.powerRequirements },
+        { label: 'Sound', value: proposal.sound },
+        { label: 'Safety', value: proposal.safety },
+        { label: 'Strike', value: proposal.strike },
+        { label: 'Co-creation', value: proposal.coCreation },
+        { label: 'Team', value: proposal.team },
+    ];
+
+    return sections
+        .filter(section => section.value)
+        .map(section => `
+            <div class="detail-section">
+                <h3>${section.label}</h3>
+                <p>${formatText(section.value)}</p>
+            </div>
+        `)
+        .join('');
+}
+
+function createProposalCard(proposal) {
     const card = document.createElement('div');
     card.className = 'proposal-card';
 
-    const title = findColumn(row, headers, ['Title', 'title']) || 'Untitled Proposal';
-    const name = findColumn(row, headers, ['Name', 'name']);
-    const email = findColumn(row, headers, ['Email', 'email', 'Email address']);
-    const description = findColumn(row, headers, ['Description', 'description']);
-    const technicalDetails = findColumn(row, headers, ['Technical details', 'Technical Details']);
-    const budget = findColumn(row, headers, ['Budget', 'budget']);
-    const spaceRequirements = findColumn(row, headers, ['Space requirements', 'Space Requirements']);
-    const locationRequirements = findColumn(row, headers, ['Location requirements', 'Location Requirements']);
-    const powerRequirements = findColumn(row, headers, ['Power requirements', 'Power Requirements']);
-    const sound = findColumn(row, headers, ['Sound', 'sound']);
-    const safety = findColumn(row, headers, ['Safety', 'safety']);
-    const strike = findColumn(row, headers, ['Strike', 'strike']);
-    const imageUrl = findColumn(row, headers, ['Image', 'image']);
-    const coCreation = findColumn(row, headers, ['Co-creation', 'Co-creation']);
-    const team = findColumn(row, headers, ['Team', 'team']);
-    const status = findColumn(row, headers, ['Status', 'status']);
-
-    let coverImage = imageUrl.trim();
-    if (coverImage.startsWith('"') && coverImage.endsWith('"')) {
-        coverImage = coverImage.slice(1, -1);
-    }
-
-    let authorInfo = '';
-    if (name) {
-        authorInfo = name;
-        if (email) {
-            authorInfo += ` <a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a>`;
-        }
-    } else if (email) {
-        authorInfo = `<a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a>`;
-    }
-
-    const statusClass = getStatusClass(status);
-    const statusLabel = getStatusLabel(status);
-    const statusHTML = status ? `<span class="status ${statusClass}">${escapeHtml(statusLabel)}</span>` : '';
+    const detailSections = buildDetailSections(proposal);
 
     card.innerHTML = `
         <header>
-            <h2>${escapeHtml(title)}</h2>
-            ${statusHTML}
-            ${authorInfo ? `<div class="author">${authorInfo}</div>` : ''}
+            <div class="title-row">
+                <h2>${escapeHtml(proposal.title)}</h2>
+                <span class="status ${proposal.statusClass}">${escapeHtml(proposal.statusLabel)}</span>
+            </div>
+            ${proposal.name ? `<div class="author">${escapeHtml(proposal.name)}</div>` : ''}
         </header>
         <main>
-            ${coverImage ? `<img class="cover-image" src="${coverImage.replace(/"/g, '&quot;')}" alt="${escapeHtml(title)}" loading="lazy" onerror="this.style.display='none'">` : ''}
-            <div class="summary">${formatText(description || 'No description provided.')}</div>
-            <details>
-                <summary>View full details</summary>
-                <div class="details-content">
-                    ${technicalDetails ? `
-                        <div class="detail-section">
-                            <h3>Technical Details</h3>
-                            <p>${formatText(technicalDetails)}</p>
-                        </div>
-                    ` : ''}
-                    ${spaceRequirements ? `
-                        <div class="detail-section">
-                            <h3>Space Requirements</h3>
-                            <p>${formatText(spaceRequirements)}</p>
-                        </div>
-                    ` : ''}
-                    ${locationRequirements ? `
-                        <div class="detail-section">
-                            <h3>Location Requirements</h3>
-                            <p>${formatText(locationRequirements)}</p>
-                        </div>
-                    ` : ''}
-                    ${powerRequirements ? `
-                        <div class="detail-section">
-                            <h3>Power Requirements</h3>
-                            <p>${formatText(powerRequirements)}</p>
-                        </div>
-                    ` : ''}
-                    ${sound ? `
-                        <div class="detail-section">
-                            <h3>Sound</h3>
-                            <p>${formatText(sound)}</p>
-                        </div>
-                    ` : ''}
-                    ${safety ? `
-                        <div class="detail-section">
-                            <h3>Safety</h3>
-                            <p>${formatText(safety)}</p>
-                        </div>
-                    ` : ''}
-                    ${strike ? `
-                        <div class="detail-section">
-                            <h3>Strike</h3>
-                            <p>${formatText(strike)}</p>
-                        </div>
-                    ` : ''}
-                    ${coCreation ? `
-                        <div class="detail-section">
-                            <h3>Co-creation</h3>
-                            <p>${formatText(coCreation)}</p>
-                        </div>
-                    ` : ''}
-                    ${team ? `
-                        <div class="detail-section">
-                            <h3>Team</h3>
-                            <p>${formatText(team)}</p>
-                        </div>
-                    ` : ''}
-                </div>
-            </details>
+            ${proposal.coverImage ? `<img class="cover-image" src="${proposal.coverImage.replace(/"/g, '&quot;')}" alt="${escapeHtml(proposal.title)}" loading="lazy" onerror="this.style.display='none'">` : ''}
+            <div class="summary">${formatText(proposal.description || 'No description provided.')}</div>
+            ${detailSections ? `
+                <details>
+                    <summary>View full details</summary>
+                    <div class="details-content">
+                        ${detailSections}
+                    </div>
+                </details>
+            ` : ''}
         </main>
     `;
 
     return card;
 }
 
-function displayProposals(data) {
-    const { headers, rows } = data;
-    
-    if (headers.length === 0 || rows.length === 0) {
-        document.getElementById('proposals-list').innerHTML = 
-            '<div class="empty">No proposals available</div>';
+function buildTable(list) {
+    const table = document.createElement('table');
+    table.className = 'proposal-table';
+    const thead = document.createElement('thead');
+    thead.innerHTML = `
+        <tr>
+            <th>Title</th>
+            <th>Artist</th>
+            <th>Status</th>
+            <th>Details</th>
+        </tr>
+    `;
+
+    const tbody = document.createElement('tbody');
+
+    list.forEach(proposal => {
+        const tr = document.createElement('tr');
+
+        const titleTd = document.createElement('td');
+        titleTd.textContent = proposal.title;
+
+        const artistTd = document.createElement('td');
+        artistTd.textContent = proposal.name || '—';
+
+        const statusTd = document.createElement('td');
+        statusTd.innerHTML = `<span class="status ${proposal.statusClass}">${escapeHtml(proposal.statusLabel)}</span>`;
+
+        const detailsTd = document.createElement('td');
+        const detailSections = buildDetailSections(proposal);
+        const descriptionHTML = proposal.description ? `<p>${formatText(proposal.description)}</p>` : '';
+
+        if (detailSections || proposal.description) {
+            detailsTd.innerHTML = `
+                <details class="table-details">
+                    <summary>Open</summary>
+                    <div>
+                        ${descriptionHTML}
+                        ${detailSections}
+                    </div>
+                </details>
+            `;
+        } else {
+            detailsTd.textContent = '—';
+        }
+
+        tr.appendChild(titleTd);
+        tr.appendChild(artistTd);
+        tr.appendChild(statusTd);
+        tr.appendChild(detailsTd);
+        tbody.appendChild(tr);
+    });
+
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    return table;
+}
+
+function sortProposals(list) {
+    const copy = [...list];
+    if (sortMode === 'title-asc') {
+        return copy.sort((a, b) => a.titleLower.localeCompare(b.titleLower));
+    }
+    if (sortMode === 'title-desc') {
+        return copy.sort((a, b) => b.titleLower.localeCompare(a.titleLower));
+    }
+    return copy.sort((a, b) => a.orderIndex - b.orderIndex);
+}
+
+function applyFiltersAndRender() {
+    if (!proposalData.length) return;
+
+    const filtered = proposalData.filter(proposal => {
+        const flag = statusFilters[proposal.statusKey];
+        return flag === undefined ? true : flag;
+    });
+
+    filteredList = sortProposals(filtered);
+    renderProposals();
+}
+
+function renderProposals() {
+    const list = filteredList;
+    proposalsContainer.innerHTML = '';
+
+    proposalsContainer.classList.toggle('table-view', viewMode === 'table');
+
+    if (!list.length) {
+        proposalsContainer.innerHTML = '<div class="empty">No proposals match the selected filters.</div>';
+        proposalsContainer.classList.remove('single');
         document.getElementById('loading').style.display = 'none';
+        return;
+    }
+
+    if (viewMode === 'table') {
+        proposalsContainer.appendChild(buildTable(list));
+        proposalsContainer.classList.remove('single');
+    } else {
+        list.forEach(proposal => proposalsContainer.appendChild(createProposalCard(proposal)));
+        proposalsContainer.classList.toggle('single', list.length === 1);
+    }
+
+    document.getElementById('loading').style.display = 'none';
+}
+
+function showError(message) {
+    document.getElementById('loading').style.display = 'none';
+    const errorBox = document.getElementById('error');
+    errorBox.textContent = message;
+    errorBox.style.display = 'block';
+}
+
+async function fetchData() {
+    try {
+        const response = await fetch(CSV_URL);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+        }
+
+        const csvText = await response.text();
+        const data = parseCSV(csvText);
+        hydrateProposals(data);
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        showError(`Error loading data: ${error.message}. Please make sure the spreadsheet is publicly accessible.`);
+    }
+}
+
+function hydrateProposals(data) {
+    const { headers, rows } = data;
+    if (!headers.length || !rows.length) {
+        renderProposals();
         return;
     }
 
@@ -297,47 +414,13 @@ function displayProposals(data) {
         return title && title.trim().length > 0;
     });
 
-    if (completeRows.length === 0) {
-        document.getElementById('proposals-list').innerHTML = 
-            '<div class="empty">No complete proposals available</div>';
-        document.getElementById('loading').style.display = 'none';
+    if (!completeRows.length) {
+        renderProposals();
         return;
     }
 
-    const container = document.getElementById('proposals-list');
-    const fragment = document.createDocumentFragment();
-
-    completeRows.forEach(row => {
-        const card = createProposalCard(row, headers);
-        fragment.appendChild(card);
-    });
-
-    container.appendChild(fragment);
-    document.getElementById('loading').style.display = 'none';
-}
-
-function showError(message) {
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('error').textContent = message;
-    document.getElementById('error').style.display = 'block';
-}
-
-async function fetchData() {
-    try {
-        const response = await fetch(CSV_URL);
-        
-        if (!response.ok) {
-            throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
-        }
-
-        const csvText = await response.text();
-        const data = parseCSV(csvText);
-        displayProposals(data);
-    } catch (error) {
-        console.error('Error fetching data:', error);
-        showError(`Error loading data: ${error.message}. Please make sure the spreadsheet is publicly accessible.`);
-    }
+    proposalData = completeRows.map(row => mapRowToProposal(row, headers));
+    applyFiltersAndRender();
 }
 
 fetchData();
-

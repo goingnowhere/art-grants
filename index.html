@@ -4,16 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nowhere Art Grants</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Domine:wght@400..700&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <h1>Nowhere Art Grants</h1>
-    <div id="loading" class="loading">
-        <div class="spinner"></div>
-        <p>Loading proposals...</p>
+    <div class="page-wrap">
+        <h1>Nowhere Art Grants</h1>
+
+        <div class="layout">
+            <aside class="sidebar">
+                <section class="controls" aria-label="Filters and sorting">
+                    <div class="status-filters" role="group" aria-label="Filter by status">
+                        <button type="button" class="status-chip status funded is-active" data-status="funded" aria-pressed="true">Funded</button>
+                        <button type="button" class="status-chip status not-funded is-active" data-status="not-funded" aria-pressed="true">Not Funded</button>
+                        <button type="button" class="status-chip status under-review is-active" data-status="under-review" aria-pressed="true">Under Review</button>
+                    </div>
+                    <div class="sort-control">
+                        <label for="sort-select">Sort</label>
+                        <select id="sort-select">
+                            <option value="">Default order</option>
+                            <option value="title-asc">Title A → Z</option>
+                            <option value="title-desc">Title Z → A</option>
+                        </select>
+                    </div>
+                    <div class="view-toggle" role="group" aria-label="View mode">
+                        <button type="button" class="view-button is-active" data-view="cards" aria-pressed="true">Cards</button>
+                        <button type="button" class="view-button" data-view="table" aria-pressed="false">Table</button>
+                    </div>
+                </section>
+            </aside>
+
+            <section class="content">
+                <div id="loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading proposals...</p>
+                </div>
+                <div id="error" class="error" style="display: none;"></div>
+                <div id="proposals-list"></div>
+            </section>
+        </div>
     </div>
-    <div id="error" class="error" style="display: none;"></div>
-    <div id="proposals-list"></div>
     <script src="js/script.js"></script>
 </body>
 </html>
