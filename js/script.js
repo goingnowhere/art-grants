@@ -10,6 +10,7 @@ let sortMode = '';
 let viewMode = 'cards';
 let proposalData = [];
 let filteredList = [];
+let suppressHashChange = false;
 
 const statusFilters = Array.from(statusChips).reduce((acc, chip) => {
     const key = chip.dataset.status;
@@ -203,6 +204,10 @@ function mapRowToProposal(row, headers) {
     if (imageUrl.startsWith('"') && imageUrl.endsWith('"')) {
         imageUrl = imageUrl.slice(1, -1);
     }
+    const hasImage = !!imageUrl;
+    if (!hasImage) {
+        imageUrl = 'https://placehold.co/600x400/CCCCCC/000000?text=Image+Coming+Soon';
+    }
 
     const statusRaw = get(['Status', 'status']);
     const statusClass = getStatusClass(statusRaw);
@@ -224,11 +229,21 @@ function mapRowToProposal(row, headers) {
         coCreation: get(['Co-creation', 'Co-creation']),
         team: get(['Team', 'team']),
         coverImage: imageUrl,
+        hasImage,
         statusLabel: getStatusLabel(statusRaw),
         statusClass,
         statusKey: statusClass,
         orderIndex: Math.random(),
     };
+}
+
+function getDisplayName(proposal) {
+    return proposal.name || '';
+}
+
+function formatAuthor(proposal) {
+    const displayName = getDisplayName(proposal);
+    return displayName ? `<div class="author">${escapeHtml(displayName)}</div>` : '';
 }
 
 function buildDetailSections(proposal) {
@@ -242,6 +257,7 @@ function buildDetailSections(proposal) {
         { label: 'Strike', value: proposal.strike },
         { label: 'Co-creation', value: proposal.coCreation },
         { label: 'Team', value: proposal.team },
+        { label: 'Budget', value: proposal.budget },
     ];
 
     return sections
@@ -258,6 +274,9 @@ function buildDetailSections(proposal) {
 function createProposalCard(proposal, showAllDetails = false, showStatusText = false) {
     const card = document.createElement('div');
     card.className = 'proposal-card';
+    if (showAllDetails) {
+        card.classList.add('modal-view');
+    }
 
     const detailSections = buildDetailSections(proposal);
 
@@ -272,15 +291,18 @@ function createProposalCard(proposal, showAllDetails = false, showStatusText = f
     const statusHTML = showStatusText ? `<span class="status ${proposal.statusClass}">${escapeHtml(proposal.statusLabel)}</span>` : '';
     const permalink = `${window.location.origin}${window.location.pathname}#${proposal.slug}`;
     const permalinkHTML = !showStatusText ? `<button class="permalink-btn" data-permalink="${permalink}" aria-label="Copy permalink" title="Copy permalink">🔗</button>` : '';
-    const cardStatusHTML = !showStatusText ? `<div class="card-status"><span class="status ${proposal.statusClass}">${escapeHtml(proposal.statusLabel)}</span>${permalinkHTML}</div>` : '';
+    const showCardStatus = !showAllDetails && !showStatusText;
+    const cardStatusHTML = showCardStatus ? `<div class="card-status"><span class="status ${proposal.statusClass}">${escapeHtml(proposal.statusLabel)}</span>${permalinkHTML}</div>` : '';
     
     card.innerHTML = `
         <header>
-            <div class="title-row">
-                <h2>${escapeHtml(proposal.title)}</h2>
-                ${statusHTML}
-            </div>
-            ${proposal.name ? `<div class="author">${escapeHtml(proposal.name)}</div>` : ''}
+            ${!showAllDetails ? `
+                <div class="title-row">
+                    <h2>${escapeHtml(proposal.title)}</h2>
+                    ${statusHTML}
+                </div>
+                ${formatAuthor(proposal)}
+            ` : ''}
         </header>
         <main>
             ${proposal.coverImage ? `<img class="cover-image" src="${proposal.coverImage.replace(/"/g, '&quot;')}" alt="${escapeHtml(proposal.title)}" loading="lazy" onerror="this.style.display='none'">` : ''}
@@ -345,6 +367,12 @@ function buildTable(list) {
 }
 
 function openProposalModal(proposal) {
+    const navList = (filteredList && filteredList.length ? filteredList : proposalData) || [];
+    let currentIndex = navList.findIndex((item) => item.slug === proposal.slug);
+    if (currentIndex === -1 && proposalData.length) {
+        currentIndex = proposalData.findIndex((item) => item.slug === proposal.slug);
+    }
+
     const modal = document.createElement('div');
     modal.className = 'proposal-modal';
     
@@ -359,9 +387,50 @@ function openProposalModal(proposal) {
     closeBtn.setAttribute('aria-label', 'Close');
     closeBtn.textContent = '×';
     
-    const card = createProposalCard(proposal, true, true);
+    const card = createProposalCard(proposal, true, false);
     
-    content.appendChild(closeBtn);
+    const modalBar = document.createElement('div');
+    modalBar.className = 'modal-bar';
+    
+    const modalBarLeft = document.createElement('div');
+    modalBarLeft.className = 'modal-bar-left';
+    
+    const modalBarCenter = document.createElement('div');
+    modalBarCenter.className = 'modal-bar-center';
+    const modalTitle = document.createElement('h2');
+    modalTitle.textContent = proposal.title || 'Untitled Proposal';
+    const modalArtist = document.createElement('p');
+    modalArtist.className = 'modal-bar-artist';
+    modalArtist.textContent = getDisplayName(proposal) || '';
+    modalBarCenter.appendChild(modalTitle);
+    if (getDisplayName(proposal)) {
+        modalBarCenter.appendChild(modalArtist);
+    }
+    
+    const modalBarRight = document.createElement('div');
+    modalBarRight.className = 'modal-bar-right';
+    const statusBadge = document.createElement('span');
+    statusBadge.className = `status ${proposal.statusClass}`;
+    statusBadge.textContent = proposal.statusLabel;
+    
+    const modalLinkBtn = document.createElement('button');
+    modalLinkBtn.className = 'modal-bar-link';
+    modalLinkBtn.setAttribute('aria-label', 'Copy project link');
+    modalLinkBtn.textContent = '🔗';
+    modalLinkBtn.addEventListener('click', () => {
+        const url = `${window.location.origin}${window.location.pathname}#${proposal.slug}`;
+        navigator.clipboard.writeText(url).then(() => {
+            modalLinkBtn.textContent = '✓';
+            setTimeout(() => {
+                modalLinkBtn.textContent = '🔗';
+            }, 1000);
+        });
+    });
+    
+    modalBarRight.append(statusBadge, modalLinkBtn, closeBtn);
+    modalBar.append(modalBarLeft, modalBarCenter, modalBarRight);
+    
+    content.appendChild(modalBar);
     content.appendChild(card);
     modal.appendChild(backdrop);
     modal.appendChild(content);
@@ -369,21 +438,81 @@ function openProposalModal(proposal) {
     document.body.appendChild(modal);
     document.body.style.overflow = 'hidden';
     
+    suppressHashChange = true;
     window.location.hash = proposal.slug;
+    setTimeout(() => {
+        suppressHashChange = false;
+    }, 0);
     window.scrollTo(0, 0);
 
-    const closeModal = () => {
-        document.body.removeChild(modal);
+    const closeModal = (skipHashReset = false) => {
+        if (document.body.contains(modal)) {
+            document.body.removeChild(modal);
+        }
         document.body.style.overflow = '';
-        if (window.location.hash === `#${proposal.slug}`) {
+        if (!skipHashReset && window.location.hash === `#${proposal.slug}`) {
+            suppressHashChange = true;
             window.history.replaceState(null, '', window.location.pathname);
+            setTimeout(() => {
+                suppressHashChange = false;
+            }, 0);
+        }
+        if (!skipHashReset) {
+            viewMode = 'cards';
+            viewButtons.forEach((btn) => {
+                const isActive = btn.dataset.view === viewMode;
+                btn.classList.toggle('is-active', isActive);
+                btn.setAttribute('aria-pressed', String(isActive));
+            });
+            renderProposals();
         }
     };
 
-    backdrop.addEventListener('click', closeModal);
-    closeBtn.addEventListener('click', closeModal);
+    const navigateTo = (offset) => {
+        if (!navList.length || currentIndex === -1) return;
+        currentIndex = (currentIndex + offset + navList.length) % navList.length;
+        const nextProposal = navList[currentIndex];
+        closeModal(true);
+        openProposalModal(nextProposal);
+    };
+
+    if (navList.length > 1 && currentIndex !== -1) {
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'modal-nav modal-nav-prev';
+        prevBtn.setAttribute('aria-label', 'Previous proposal');
+        prevBtn.textContent = '‹';
+        prevBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            navigateTo(-1);
+        });
+
+        const pagination = document.createElement('span');
+        pagination.className = 'modal-pagination';
+        pagination.textContent = `${currentIndex + 1} / ${navList.length}`;
+
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'modal-nav modal-nav-next';
+        nextBtn.setAttribute('aria-label', 'Next proposal');
+        nextBtn.textContent = '›';
+        nextBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            navigateTo(1);
+        });
+
+        modalBarLeft.append(prevBtn);
+        modalBarLeft.append(pagination);
+        modalBarLeft.append(nextBtn);
+    }
+
+    backdrop.addEventListener('click', () => closeModal());
+    closeBtn.addEventListener('click', () => closeModal());
     modal.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') closeModal();
+    });
+    modal.addEventListener('click', (e) => {
+        if (!content.contains(e.target) && !e.target.closest('.modal-nav')) {
+            closeModal();
+        }
     });
     
     closeBtn.focus();
@@ -397,6 +526,7 @@ function openProposalBySlug(slug) {
 }
 
 function handleHashChange() {
+    if (suppressHashChange) return;
     const hash = window.location.hash.slice(1);
     if (hash) {
         openProposalBySlug(hash);
@@ -410,6 +540,14 @@ function sortProposals(list) {
     }
     if (sortMode === 'title-desc') {
         return copy.sort((a, b) => b.titleLower.localeCompare(a.titleLower));
+    }
+    if (sortMode === 'status') {
+        const order = {
+            'funded': 0,
+            'under-review': 1,
+            'not-funded': 2,
+        };
+        return copy.sort((a, b) => (order[a.statusClass] ?? 99) - (order[b.statusClass] ?? 99) || a.titleLower.localeCompare(b.titleLower));
     }
     return copy.sort((a, b) => a.orderIndex - b.orderIndex);
 }
