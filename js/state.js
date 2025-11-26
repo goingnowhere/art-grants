@@ -10,6 +10,7 @@ export const state = {
   proposalData: [],
   filteredList: [],
   suppressHashChange: false,
+  searchQuery: '',
 };
 
 

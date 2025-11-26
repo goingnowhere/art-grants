@@ -11,6 +11,7 @@ let sortSelect;
 let viewButtons;
 let statusButtons;
 let proposalCountEl;
+let searchInput;
 
 export function initUI() {
   proposalsContainer = document.getElementById('proposals-list');
@@ -20,6 +21,7 @@ export function initUI() {
   viewButtons = [...document.querySelectorAll('.view-button')];
   statusButtons = [...document.querySelectorAll('.status-chip')];
   proposalCountEl = document.getElementById('proposal-count');
+  searchInput = document.getElementById('search-input');
 
   attachEventListeners();
   loadData();
@@ -54,6 +56,13 @@ function attachEventListeners() {
       renderProposals();
     });
   });
+
+  if (searchInput) {
+    searchInput.addEventListener('input', (event) => {
+      state.searchQuery = event.target.value.trim().toLowerCase();
+      applyFiltersAndRender();
+    });
+  }
 
   window.addEventListener('hashchange', () => {
     if (state.suppressHashChange) return;
@@ -99,11 +108,32 @@ async function loadData() {
 function applyFiltersAndRender() {
   if (!state.proposalData.length) return;
   const filtered = state.proposalData.filter((proposal) => {
-    const flag = statusFilters[proposal.statusKey];
-    return flag === undefined ? true : flag;
+    // Status filter
+    const statusMatch = statusFilters[proposal.statusKey] !== false;
+    
+    // Search filter
+    let searchMatch = true;
+    if (state.searchQuery) {
+      const query = state.searchQuery;
+      const searchableText = [
+        proposal.title || '',
+        proposal.name || '',
+        proposal.description || '',
+        proposal.technicalDetails || '',
+        proposal.spaceRequirements || '',
+        proposal.locationRequirements || '',
+        proposal.team || '',
+      ]
+        .join(' ')
+        .toLowerCase();
+      searchMatch = searchableText.includes(query);
+    }
+    
+    return statusMatch && searchMatch;
   });
 
   state.filteredList = sortProposals(filtered);
+  updateProposalCount(state.filteredList.length);
   renderProposals();
 }
 

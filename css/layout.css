@@ -135,6 +135,32 @@ h1 {
   gap: 0.5rem;
 }
 
+.search-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.search-control input {
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--border);
+  font-size: 12px;
+  background: var(--bg);
+  font-family: inherit;
+  letter-spacing: 0.02em;
+  border-radius: 4px;
+  width: 100%;
+}
+
+.search-control input:focus {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
 .status-chip {
   border: 1px solid var(--border);
   background: transparent;
