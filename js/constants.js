@@ -4,3 +4,4 @@ export const SPREADSHEET_ID =
 export const CSV_URL = `https://docs.google.com/spreadsheets/d/e/${SPREADSHEET_ID}/pub?output=csv`;
 export const PLACEHOLDER_IMAGE = 'https://placehold.co/600x400/png?text=Image+Coming+Soon';
 
+

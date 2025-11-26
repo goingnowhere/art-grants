@@ -114,3 +114,4 @@ export function getDisplayName(proposal) {
   return proposal.name || '';
 }
 
+
