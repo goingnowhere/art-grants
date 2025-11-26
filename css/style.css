@@ -13,7 +13,6 @@
   .view-toggle,
   .intro,
   .header-actions,
-  .permalink-btn,
   .modal-nav,
   .modal-close,
   .spinner,
@@ -345,21 +344,7 @@ h1 {
   gap: 1rem;
 }
 
-.permalink-btn {
-  background: transparent;
-  border: none;
-  color: var(--text);
-  cursor: pointer;
-  padding: 0.25rem;
-  font-size: 0.9rem;
-  line-height: 1;
-  transition: opacity 0.1s ease;
-  flex-shrink: 0;
-}
-
-.permalink-btn:hover {
-  opacity: 0.6;
-}
+/* permalink button removed */
 
 .proposal-card h2 {
   font-size: 1.25rem;
@@ -612,20 +597,7 @@ h1 {
   flex-wrap: wrap;
 }
 
-.modal-bar-link {
-  border: 1px solid var(--border);
-  background: transparent;
-  padding: 0.3rem 0.6rem;
-  cursor: pointer;
-  font-size: 0.8rem;
-  letter-spacing: 0.02em;
-  border-radius: 4px;
-}
-
-.modal-bar-link:hover {
-  background: var(--text);
-  color: var(--bg);
-}
+/* modal-bar-link removed */
 
 .modal-nav {
   position: static;

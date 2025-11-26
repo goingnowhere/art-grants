@@ -1,3 +1,9 @@
+/* removed modal link */
+.modal-nav-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
 /* Modal styles */
 
 .proposal-modal {
@@ -28,36 +34,54 @@
   max-height: 90vh;
   overflow-y: auto;
   background: var(--card-bg);
-  border: 1px solid var(--border);
+  border: 3px solid var(--border);
   box-shadow: none;
   z-index: 1001;
   border-radius: 6px;
+}
+
+.modal-content.modal-status-funded {
+  border-top-color: #00c853;
+}
+
+.modal-content.modal-status-not-funded {
+  border-top-color: #d50000;
+}
+
+.modal-content.modal-status-under-review {
+  border-top-color: #ffab00;
 }
 
 .modal-bar {
   position: sticky;
   top: 0;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 1rem;
+  justify-content: center;
   background: var(--card-bg);
   border-bottom: 1px solid var(--border);
-  padding: 1rem;
+  padding: 0.9rem 3.25rem 0.9rem;
   z-index: 1;
 }
 
 .modal-bar-left {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.2rem;
+  font-size: 12px;
+  letter-spacing: 0.01em;
 }
 
 .modal-bar-center {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.2rem;
   text-align: center;
 }
 
@@ -75,32 +99,20 @@
 }
 
 .modal-bar-right {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  gap: 0.4rem;
 }
 
-.modal-bar-link {
-  border: 1px solid var(--border);
-  background: transparent;
-  padding: 0.3rem 0.6rem;
-  cursor: pointer;
-  font-size: 12px;
-  letter-spacing: 0.02em;
-  border-radius: 4px;
-}
-
-.modal-bar-link:hover {
-  background: var(--text);
-  color: var(--bg);
-}
+/* removed modal link */
 
 .modal-nav {
-  position: static;
-  transform: none;
-  width: 44px;
-  height: 44px;
+  width: 28px;
+  height: 28px;
   border: none;
   background: rgba(255, 255, 255, 0.85);
   color: var(--text);
@@ -118,27 +130,32 @@
   color: var(--bg);
 }
 
+.modal-nav-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
 .modal-pagination {
   font-size: 12px;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
 .modal-close {
   position: static;
   background: transparent;
-  border: none;
-  font-size: 1.5rem;
+  border: 1px solid var(--border);
+  font-size: 1rem;
   line-height: 1;
   color: var(--text);
   cursor: pointer;
   z-index: 1002;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.1s ease, color 0.1s ease;
-  font-weight: 600;
+  border-radius: 4px;
 }
 
 .modal-close:hover {

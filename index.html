@@ -7,16 +7,6 @@
       content="width=device-width, initial-scale=1.0" />
     <title>Nowhere Art Grants</title>
     <link
-      rel="preconnect"
-      href="https://fonts.googleapis.com" />
-    <link
-      rel="preconnect"
-      href="https://fonts.gstatic.com"
-      crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Domine:wght@400..700&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap"
-      rel="stylesheet" />
-    <link
       rel="stylesheet"
       href="css/main.css" />
   </head>
@@ -39,7 +29,7 @@
                 >submit your own</a
               >.
             </p>
-            <p class="intro-count"><span id="proposal-count">0</span> proposals listed</p>
+            <p class="intro-count"><span id="proposal-count">0</span> proposals listed.</p>
           </section>
           <section
             class="controls"
@@ -70,33 +60,35 @@
                 Under Review
               </button>
             </div>
-            <div class="sort-control">
-              <label for="sort-select">Sort</label>
-              <select id="sort-select">
-                <option value="">Default order</option>
-                <option value="title-asc">Title A → Z</option>
-                <option value="title-desc">Title Z → A</option>
-                <option value="status">Status</option>
-              </select>
-            </div>
-            <div
-              class="view-toggle"
-              role="group"
-              aria-label="View mode">
-              <button
-                type="button"
-                class="view-button is-active"
-                data-view="cards"
-                aria-pressed="true">
-                Cards
-              </button>
-              <button
-                type="button"
-                class="view-button"
-                data-view="table"
-                aria-pressed="false">
-                Table
-              </button>
+            <div class="controls-right">
+              <div class="sort-control">
+                <label for="sort-select">Sort</label>
+                <select id="sort-select">
+                  <option value="">Default order</option>
+                  <option value="title-asc">Title A → Z</option>
+                  <option value="title-desc">Title Z → A</option>
+                  <option value="status">Status</option>
+                </select>
+              </div>
+              <div
+                class="view-toggle"
+                role="group"
+                aria-label="View mode">
+                <button
+                  type="button"
+                  class="view-button is-active"
+                  data-view="cards"
+                  aria-pressed="true">
+                  Cards
+                </button>
+                <button
+                  type="button"
+                  class="view-button"
+                  data-view="table"
+                  aria-pressed="false">
+                  Table
+                </button>
+              </div>
             </div>
           </section>
         </aside>

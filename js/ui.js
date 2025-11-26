@@ -204,14 +204,10 @@ function createProposalCard(
   const statusHTML = showStatusText
     ? `<span class="status ${proposal.statusClass}">${escapeHtml(proposal.statusLabel)}</span>`
     : '';
-  const permalink = `${window.location.origin}${window.location.pathname}#${proposal.slug}`;
-  const permalinkHTML = !showStatusText
-    ? `<button class="permalink-btn" data-permalink="${permalink}" aria-label="Copy permalink" title="Copy permalink">🔗</button>`
-    : '';
-  const cardStatusHTML = !showStatusText
+  const cardStatusHTML = showStatusText
     ? `<div class="card-status"><span class="status ${proposal.statusClass}">${escapeHtml(
         proposal.statusLabel
-      )}</span>${permalinkHTML}</div>`
+      )}</span></div>`
     : '';
 
   const authorMarkup = !showAllDetails && showHeader ? formatAuthor(proposal) : '';
@@ -236,20 +232,6 @@ function createProposalCard(
         </main>
         ${cardStatusHTML}
     `;
-
-  const permalinkBtn = card.querySelector('.permalink-btn');
-  if (permalinkBtn) {
-    permalinkBtn.addEventListener('click', (event) => {
-      event.stopPropagation();
-      navigator.clipboard.writeText(permalinkBtn.dataset.permalink).then(() => {
-        const originalText = permalinkBtn.textContent;
-        permalinkBtn.textContent = '✓';
-        setTimeout(() => {
-          permalinkBtn.textContent = originalText;
-        }, 1000);
-      });
-    });
-  }
 
   return card;
 }
@@ -321,6 +303,7 @@ function openProposalModal(proposal) {
 
   const content = document.createElement('div');
   content.className = 'modal-content';
+  content.classList.add(`modal-status-${proposal.statusClass}`);
 
   const closeBtn = document.createElement('button');
   closeBtn.className = 'modal-close';
@@ -329,7 +312,7 @@ function openProposalModal(proposal) {
 
   const card = createProposalCard(proposal, {
     showAllDetails: true,
-    showStatusText: true,
+    showStatusText: false,
     showHeader: false,
   });
 
@@ -353,11 +336,7 @@ function openProposalModal(proposal) {
 
   const modalBarRight = document.createElement('div');
   modalBarRight.className = 'modal-bar-right';
-  const statusBadge = document.createElement('span');
-  statusBadge.className = `status ${proposal.statusClass}`;
-  statusBadge.textContent = proposal.statusLabel;
-
-  modalBarRight.append(statusBadge, closeBtn);
+  modalBarRight.appendChild(closeBtn);
   modalBar.append(modalBarLeft, modalBarCenter, modalBarRight);
 
   content.appendChild(modalBar);
@@ -402,6 +381,9 @@ function openProposalModal(proposal) {
     pagination.className = 'modal-pagination';
     pagination.textContent = `${currentIndex + 1} / ${navList.length}`;
 
+    const navRow = document.createElement('div');
+    navRow.className = 'modal-nav-row';
+
     const prevBtn = document.createElement('button');
     prevBtn.className = 'modal-nav modal-nav-prev';
     prevBtn.setAttribute('aria-label', 'Previous proposal');
@@ -420,7 +402,8 @@ function openProposalModal(proposal) {
       navigateTo(1);
     });
 
-    modalBarLeft.append(prevBtn, pagination, nextBtn);
+    navRow.append(prevBtn, pagination, nextBtn);
+    modalBarLeft.append(navRow);
   }
 
   backdrop.addEventListener('click', () => closeModal());
