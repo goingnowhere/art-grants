@@ -18,15 +18,16 @@
       rel="stylesheet" />
     <link
       rel="stylesheet"
-      href="css/style.css" />
+      href="css/main.css" />
   </head>
   <body>
     <div class="page-wrap">
-      <h1>Nowhere Art Grants</h1>
+      <h1 class="visually-hidden">Nowhere Art Grants</h1>
 
       <div class="layout">
         <aside class="sidebar">
-          <div class="intro">
+          <section class="intro">
+            <p class="intro-label">Nowhere Art Grants</p>
             <p>
               This platform displays art grant proposals for Nowhere. Proposals are submitted through a form and added to a spreadsheet,
               which populates this site. Browse proposals or
@@ -38,7 +39,8 @@
                 >submit your own</a
               >.
             </p>
-          </div>
+            <p class="intro-count"><span id="proposal-count">0</span> proposals listed</p>
+          </section>
           <section
             class="controls"
             aria-label="Filters and sorting">
@@ -114,6 +116,8 @@
         </section>
       </div>
     </div>
-    <script src="js/script.js"></script>
+    <script
+      type="module"
+      src="js/main.js"></script>
   </body>
 </html>

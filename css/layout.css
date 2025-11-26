@@ -1,0 +1,245 @@
+/* Layout and structural styles */
+.page-wrap {
+  width: 100%;
+  margin: 0 auto;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: calc(var(--space) * 1.5);
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(180px, 200px) minmax(0, 1fr);
+  gap: var(--space);
+  align-items: flex-start;
+}
+
+.sidebar {
+  position: sticky;
+  top: var(--space);
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space);
+}
+
+.content {
+  width: 100%;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem 0;
+  color: var(--text);
+}
+
+.spinner {
+  border: 2px solid var(--border);
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  animation: spin 0.8s linear infinite;
+  margin: 0.5rem auto;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.error {
+  background: #ffffff;
+  color: var(--text);
+  padding: 1rem;
+  border: 1px solid var(--border);
+  margin: 1rem auto;
+  max-width: 800px;
+}
+
+.intro {
+  padding: 0.9rem;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  border-radius: 4px;
+}
+
+.intro-label {
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin: 0 0 0.35rem;
+}
+
+.intro p {
+  font-size: 12px;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+  color: var(--text);
+  margin: 0 0 0.65rem;
+}
+
+.intro-count {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.01em;
+  color: var(--text);
+  opacity: 0.7;
+}
+
+.intro-count span {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.inline-link {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.inline-link:hover {
+  text-decoration: none;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  border-radius: 4px;
+}
+
+.status-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.status-chip {
+  border: 1px solid var(--border);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  padding: 0.35rem 0.65rem;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  transition: background 0.1s ease, color 0.1s ease;
+  border-radius: 4px;
+}
+
+.status-chip.is-active {
+  background: var(--text);
+  color: var(--bg);
+}
+
+.status-chip:not(.is-active) {
+  opacity: 0.4;
+}
+
+.status-chip:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
+.sort-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.sort-control select {
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--border);
+  font-size: 12px;
+  background: var(--bg);
+  font-family: inherit;
+  letter-spacing: 0.02em;
+  border-radius: 4px;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.view-button {
+  flex: 1;
+  border: 1px solid var(--border);
+  background: transparent;
+  padding: 0.45rem 0.6rem;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.1s ease, color 0.1s ease;
+  border-radius: 4px;
+}
+
+.view-button.is-active {
+  background: var(--text);
+  color: var(--bg);
+}
+
+#proposals-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: calc(var(--space) * 0.75);
+  width: 100%;
+  justify-items: stretch;
+}
+
+#proposals-list.single {
+  grid-template-columns: minmax(0, 720px);
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  body {
+    padding: 1rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+  }
+
+  .controls {
+    position: static;
+  }
+
+  #proposals-list {
+    grid-template-columns: 1fr;
+  }
+
+  .view-toggle {
+    width: 100%;
+  }
+}
